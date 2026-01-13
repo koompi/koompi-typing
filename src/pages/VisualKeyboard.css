@@ -1,0 +1,120 @@
+.hidden {
+  display: none;
+}
+
+.current {
+  color: #ffc10a;
+}
+
+.correct {
+  color: #3f51b5;
+}
+
+.runesWrap,
+.errorsWrap {
+  font-size: 1.5em;
+  width: 50%;
+  color: #ffc10a;
+  margin-bottom: 1%;
+}
+
+.runesWrap {
+  text-align: start;
+}
+
+.errorsWrap {
+  text-align: end;
+}
+
+#leftHand,
+#rightHand {
+  width: 15%;
+}
+
+#leftHand svg,
+#rightHand svg {
+  height: 333px;
+  width: auto;
+}
+
+#keyboard {
+  width: 70%;
+}
+
+#decomposition-vk,
+#text-vk {
+  font-weight: normal;
+  word-break: break-all;
+}
+
+#text-vk {
+  line-height: 1.5em;
+  font-size: 3em;
+  max-height: 3em;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+#decomposition-vk {
+  font-size: 2em;
+  margin: 1% auto 3% auto;
+}
+
+#textWrap-vk {
+  background-color: #ddd;
+  border-radius: 5px;
+}
+
+.error-bg {
+  animation: errorAnimationBackground 0.5s;
+}
+
+@keyframes errorAnimationBackground {
+  0% {
+    background-color: #ddd;
+  }
+  33% {
+    background-color: #ffc10a;
+  }
+  100% {
+    background-color: #ddd;
+  }
+}
+
+.error {
+  animation: errorAnimation 0.5s;
+}
+
+@keyframes errorAnimation {
+  0% {
+    color: #ffc10a;
+  }
+  33% {
+    color: black;
+  }
+  100% {
+    color: #ffc10a;
+  }
+}
+
+.language-selector-wrapper {
+  margin-bottom: 20px;
+  z-index: 1000 !important;
+  position: relative;
+}
+
+.language-selector-wrapper select {
+  font-size: 1.1em;
+  padding: 5px 10px;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1000 !important;
+  background-color: #ddd;
+  border: 1px solid #999;
+}
+
+.language-selector-wrapper label {
+  margin-right: 10px;
+  font-size: 1.2em;
+}
