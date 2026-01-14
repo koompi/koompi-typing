@@ -32,22 +32,11 @@ bun run build
 bun run preview
 ```
 
-## Environment Variables
-
-Create a `.env.local` file for optional AI-powered text generation:
-
-```bash
-GEMINI_API_KEY=your_api_key_here
-```
-
-> **Note:** The app works fully offline without an API key using built-in typing content.
-
 ## Tech Stack
 
 - ⚛️ React 19 + TypeScript
 - 🎨 Tailwind CSS v4
 - ⚡ Vite
-- 🤖 Google Gemini (optional, for AI-generated practice texts)
 
 ## License
 
