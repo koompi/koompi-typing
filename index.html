@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KOOMPI TYPING - Master Khmer & English Typing</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description"
+    content="Master Khmer and English typing through gamified adventures. Build your streak and level up with KOOMPI TYPING!" />
+  <meta name="keywords" content="typing, khmer, english, keyboard, learning, koompi, cambodia" />
+  <meta name="author" content="KOOMPI" />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content="KOOMPI TYPING - Master Khmer & English Typing" />
+  <meta property="og:description" content="Learn to type Khmer and English through fun, gamified adventures." />
+  <meta property="og:type" content="website" />
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#3b82f6" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="KOOMPI TYPING" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Khmer:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+
+  <!-- Polyfill for process.env -->
+  <script>
+    if (typeof process === "undefined") {
+      window.process = { env: {} };
+    }
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
