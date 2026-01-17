@@ -6,7 +6,7 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "vite build && tsc -p electron/tsconfig.json && electron-builder",
     "preview": "vite preview",
     "generate": "bun run scripts/generate-content.ts",
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:3000 && tsc -p electron/tsconfig.json && electron .\"",
