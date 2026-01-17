@@ -118,20 +118,47 @@ export const getLevelData = async (level: number, lang: Language): Promise<Level
   const title = meta ? (lang === 'km' ? meta.title_km : meta.title) : `Level ${level}`;
   const description = meta ? (lang === 'km' ? meta.description_km : meta.description_en) : "";
 
+  // --- PROGRESSIVE DIFFICULTY CURVE ---
+  // Designed to be encouraging for beginners, gradually increasing challenge
+  // Early levels: Very forgiving to build confidence
+  // Mid levels: Moderate challenge to develop skills
+  // Late levels: Mastery-level requirements
+
+  const getDifficultyCriteria = (lvl: number): { minAccuracy: number; minWpm: number } => {
+    if (lvl < 10) {
+      // Unit 1 (Basics): Super easy - just learn the keys
+      return { minAccuracy: 60 + lvl * 2, minWpm: 5 + Math.floor(lvl / 2) }; // 60-78% acc, 5-9 WPM
+    } else if (lvl < 30) {
+      // Units 2-3 (Words, Sentences): Build confidence
+      return { minAccuracy: 70 + Math.floor((lvl - 10) / 4), minWpm: 8 + Math.floor((lvl - 10) / 5) }; // 70-75% acc, 8-12 WPM
+    } else if (lvl < 60) {
+      // Units 4-6 (Phrases to Travel): Developing skills
+      return { minAccuracy: 75 + Math.floor((lvl - 30) / 6), minWpm: 12 + Math.floor((lvl - 30) / 6) }; // 75-80% acc, 12-17 WPM
+    } else if (lvl < 100) {
+      // Units 7-10 (Family to Nature): Intermediate
+      return { minAccuracy: 80 + Math.floor((lvl - 60) / 10), minWpm: 18 + Math.floor((lvl - 60) / 8) }; // 80-84% acc, 18-23 WPM
+    } else if (lvl < 130) {
+      // Units 11-13 (Health to Culture): Advanced
+      return { minAccuracy: 85 + Math.floor((lvl - 100) / 10), minWpm: 25 + Math.floor((lvl - 100) / 10) }; // 85-88% acc, 25-28 WPM
+    } else {
+      // Units 14-15 (Science, History): Mastery
+      return { minAccuracy: 88 + Math.floor((lvl - 130) / 10), minWpm: 30 + Math.floor((lvl - 130) / 10) }; // 88-90% acc, 30-32 WPM
+    }
+  };
+
   // Base Data Structure
   let data: LevelData = {
     level,
     title,
     description,
     text: "loading...",
-    criteria: { minAccuracy: 85, minWpm: 15 + Math.floor(level / 5) }
+    criteria: getDifficultyCriteria(level)
   };
 
   try {
     // --- UNIT 1: KEYBOARD BASICS (0-9) ---
     // Procedurally generated from keymaps for dynamic drills
     if (level < 10) {
-      data.criteria = { minAccuracy: 90, minWpm: 10 + level };
       let chars: string[] = [];
 
       switch (level) {
@@ -147,7 +174,9 @@ export const getLevelData = async (level: number, lang: Language): Promise<Level
         case 9: chars = getChars(['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM'], lang); break;
       }
 
-      data.text = generateDrill(chars, level === 9 ? 60 : 40);
+      // Shorter drills for very early levels to build confidence
+      const drillLength = level <= 2 ? 15 : level <= 5 ? 25 : level <= 8 ? 35 : 50;
+      data.text = generateDrill(chars, drillLength);
       return data;
     }
 

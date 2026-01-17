@@ -5,6 +5,7 @@ export interface AppSettings {
     soundEffects: boolean;
     backgroundMusic: boolean;
     showFingerGuide: boolean;
+    fontStyle: 'fun' | 'readable';
     language: 'en' | 'km';
 }
 
@@ -21,6 +22,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     soundEffects: true,
     backgroundMusic: true,
     showFingerGuide: true,
+    fontStyle: 'fun',
     language: 'km',
 };
 

@@ -15,23 +15,23 @@ const ICON_MAP: Record<string, any> = {
   Keyboard, BookOpen, Trophy, Plane, Coffee, Users, Clock, Briefcase, Leaf, Heart, Smile, Palette, Microscope, Scroll
 };
 
-// Define 15 Units with Rainbow Colors
+// Define 15 Units with Rainbow Colors and Adventure Themes
 const UNITS = [
-  { id: 1, title_en: "Keyboard Basics", title_km: "មូលដ្ឋានគ្រឹះក្ដារចុច", desc_en: "Home Row & Fingers", desc_km: "ជួរកណ្ដាល និងម្រាមដៃ", range: [0, 9], color: "bg-rose-500", borderColor: "border-rose-600", icon: "Keyboard" },
-  { id: 2, title_en: "First Words", title_km: "ពាក្យដំបូង", desc_en: "Simple Vocabulary", desc_km: "វាក្យសព្ទសាមញ្ញ", range: [10, 19], color: "bg-orange-500", borderColor: "border-orange-600", icon: "BookOpen" },
-  { id: 3, title_en: "Sentences", title_km: "ប្រយោគ", desc_en: "Basic Grammar", desc_km: "វេយ្យាករណ៍មូលដ្ឋាន", range: [20, 29], color: "bg-amber-500", borderColor: "border-amber-600", icon: "Trophy" },
-  { id: 4, title_en: "Common Phrases", title_km: "ឃ្លាប្រើប្រាស់ញឹកញាប់", desc_en: "Daily Conversation", desc_km: "ការសន្ទនាប្រចាំថ្ងៃ", range: [30, 39], color: "bg-yellow-500", borderColor: "border-yellow-600", icon: "Smile" },
-  { id: 5, title_en: "Food & Drink", title_km: "អាហារ និងភេសជ្ជៈ", desc_en: "Yummy Typing", desc_km: "ការវាយអក្សរឆ្ងាញ់ៗ", range: [40, 49], color: "bg-lime-500", borderColor: "border-lime-600", icon: "Coffee" },
-  { id: 6, title_en: "Travel", title_km: "ការធ្វើដំណើរ", desc_en: "Places & Transport", desc_km: "ទីកន្លែង និងការដឹកជញ្ជូន", range: [50, 59], color: "bg-green-500", borderColor: "border-green-600", icon: "Plane" },
-  { id: 7, title_en: "Family & People", title_km: "គ្រួសារ និងមនុស្ស", desc_en: "Relationships", desc_km: "ទំនាក់ទំនង", range: [60, 69], color: "bg-emerald-500", borderColor: "border-emerald-600", icon: "Users" },
-  { id: 8, title_en: "Time & Numbers", title_km: "ពេលវេលា និងលេខ", desc_en: "Counting & Schedules", desc_km: "ការរាប់ និងកាលវិភាគ", range: [70, 79], color: "bg-teal-500", borderColor: "border-teal-600", icon: "Clock" },
-  { id: 9, title_en: "Work & School", title_km: "ការងារ និងសាលារៀន", desc_en: "Professional Skills", desc_km: "ជំនាញវិជ្ជាជីវៈ", range: [80, 89], color: "bg-cyan-500", borderColor: "border-cyan-600", icon: "Briefcase" },
-  { id: 10, title_en: "Nature", title_km: "ធម្មជាតិ", desc_en: "Environment", desc_km: "បរិស្ថាន", range: [90, 99], color: "bg-sky-500", borderColor: "border-sky-600", icon: "Leaf" },
-  { id: 11, title_en: "Health", title_km: "សុខភាព", desc_en: "Body & Mind", desc_km: "រាងកាយ និងចិត្ត", range: [100, 109], color: "bg-blue-500", borderColor: "border-blue-600", icon: "Heart" },
-  { id: 12, title_en: "Emotions", title_km: "អារម្មណ៍", desc_en: "Feelings", desc_km: "ការបញ្ចេញអារម្មណ៍", range: [110, 119], color: "bg-indigo-500", borderColor: "border-indigo-600", icon: "Smile" },
-  { id: 13, title_en: "Culture & Arts", title_km: "វប្បធម៌ និងសិល្បៈ", desc_en: "Traditions", desc_km: "ប្រពៃណី", range: [120, 129], color: "bg-violet-500", borderColor: "border-violet-600", icon: "Palette" },
-  { id: 14, title_en: "Science", title_km: "វិទ្យាសាស្ត្រ", desc_en: "Discovery", desc_km: "ការរកឃើញ", range: [130, 139], color: "bg-purple-500", borderColor: "border-purple-600", icon: "Microscope" },
-  { id: 15, title_en: "History", title_km: "ប្រវត្តិសាស្ត្រ", desc_en: "Past Events", desc_km: "ព្រឹត្តិការណ៍អតីតកាល", range: [140, 149], color: "bg-fuchsia-500", borderColor: "border-fuchsia-600", icon: "Scroll" },
+  { id: 1, title_en: "Flight School", title_km: "សាលាហោះហើរ", desc_en: "Home Row & Fingers", desc_km: "ជួរកណ្ដាល និងម្រាមដៃ", range: [0, 9], color: "bg-rose-500", borderColor: "border-rose-600", icon: "Keyboard" },
+  { id: 2, title_en: "First Steps", title_km: "ជំហានដំបូង", desc_en: "Simple Vocabulary", desc_km: "វាក្យសព្ទសាមញ្ញ", range: [10, 19], color: "bg-orange-500", borderColor: "border-orange-600", icon: "BookOpen" },
+  { id: 3, title_en: "Word Builder", title_km: "អ្នកសាងពាក្យ", desc_en: "Basic Grammar", desc_km: "វេយ្យាករណ៍មូលដ្ឋាន", range: [20, 29], color: "bg-amber-500", borderColor: "border-amber-600", icon: "Trophy" },
+  { id: 4, title_en: "Chatterbox", title_km: "អ្នកនិយាយច្រើន", desc_en: "Daily Conversation", desc_km: "ការសន្ទនាប្រចាំថ្ងៃ", range: [30, 39], color: "bg-yellow-500", borderColor: "border-yellow-600", icon: "Smile" },
+  { id: 5, title_en: "Foodie Quest", title_km: "ដំណើរស្វែងរកម្ហូប", desc_en: "Yummy Typing", desc_km: "ការវាយអក្សរឆ្ងាញ់ៗ", range: [40, 49], color: "bg-lime-500", borderColor: "border-lime-600", icon: "Coffee" },
+  { id: 6, title_en: "World Tour", title_km: "ដំណើរកំសាន្តពិភពលោក", desc_en: "Places & Transport", desc_km: "ទីកន្លែង និងការដឹកជញ្ជូន", range: [50, 59], color: "bg-green-500", borderColor: "border-green-600", icon: "Plane" },
+  { id: 7, title_en: "Family Tree", title_km: "មែកធាងគ្រួសារ", desc_en: "Relationships", desc_km: "ទំនាក់ទំនង", range: [60, 69], color: "bg-emerald-500", borderColor: "border-emerald-600", icon: "Users" },
+  { id: 8, title_en: "Time Keeper", title_km: "អ្នករក្សាពេលវេលា", desc_en: "Counting & Schedules", desc_km: "ការរាប់ និងកាលវិភាគ", range: [70, 79], color: "bg-teal-500", borderColor: "border-teal-600", icon: "Clock" },
+  { id: 9, title_en: "Office Hero", title_km: "វីរៈការិយាល័យ", desc_en: "Professional Skills", desc_km: "ជំនាញវិជ្ជាជីវៈ", range: [80, 89], color: "bg-cyan-500", borderColor: "border-cyan-600", icon: "Briefcase" },
+  { id: 10, title_en: "Jungle Explorer", title_km: "អ្នករុករកព្រៃ", desc_en: "Environment", desc_km: "បរិស្ថាន", range: [90, 99], color: "bg-sky-500", borderColor: "border-sky-600", icon: "Leaf" },
+  { id: 11, title_en: "Wellness Path", title_km: "ផ្លូវសុខភាព", desc_en: "Body & Mind", desc_km: "រាងកាយ និងចិត្ត", range: [100, 109], color: "bg-blue-500", borderColor: "border-blue-600", icon: "Heart" },
+  { id: 12, title_en: "Emotion Ocean", title_km: "មហាសមុទ្រអារម្មណ៍", desc_en: "Feelings", desc_km: "ការបញ្ចេញអារម្មណ៍", range: [110, 119], color: "bg-indigo-500", borderColor: "border-indigo-600", icon: "Smile" },
+  { id: 13, title_en: "Culture Festival", title_km: "ពិធីបុណ្យវប្បធម៌", desc_en: "Traditions", desc_km: "ប្រពៃណី", range: [120, 129], color: "bg-violet-500", borderColor: "border-violet-600", icon: "Palette" },
+  { id: 14, title_en: "Space Mission", title_km: "បេសកកម្មអវកាស", desc_en: "Discovery", desc_km: "ការរកឃើញ", range: [130, 139], color: "bg-purple-500", borderColor: "border-purple-600", icon: "Microscope" },
+  { id: 15, title_en: "Time Machine", title_km: "ម៉ាស៊ីនពេលវេលា", desc_en: "Past Events", desc_km: "ព្រឹត្តិការណ៍អតីតកាល", range: [140, 149], color: "bg-fuchsia-500", borderColor: "border-fuchsia-600", icon: "Scroll" },
 ];
 
 const ROW_HEIGHT = 110; // Vertical spacing

@@ -66,9 +66,64 @@ const getRandomOfflineText = (lang: Language, type: ContentType): string => {
   return dataset[Math.floor(Math.random() * dataset.length)];
 };
 
-export const generatePracticeText = async (lang: Language, difficulty: Difficulty = 'medium'): Promise<string> => {
+import { getRandomKhmerContent } from "../utils/khmerContent";
+
+// ... existing imports
+
+// Helper to generate a drill string from specific keys
+export const generateDrillText = async (keys: string[], lang: Language): Promise<string> => {
+  // If no keys, fallback to random practice
+  if (keys.length === 0) return generatePracticeText(lang, 'medium');
+
+  const keyString = keys.join(', ');
+
+  // Offline fallback for drills (simple repetition)
+  // "a s d f" -> "asdf adfs fads ..."
+  const makePattern = (chars: string[]) => {
+    let res = "";
+    for (let i = 0; i < 10; i++) {
+      // Shuffle and join
+      res += chars.sort(() => Math.random() - 0.5).join("") + " ";
+      // Add some common bigrams if possible? For now just raw chars
+      if (i % 2 === 0 && chars.length > 1) res += chars[0] + chars[1] + " ";
+    }
+    return res.trim();
+  };
+
   try {
+    if (!navigator.onLine) {
+      return makePattern(keys);
+    }
+
     let prompt = "";
+    if (lang === 'en') {
+      prompt = `Generate a practice typing drill focusing on these characters: ${keyString}. 
+            Create 15-20 random english words or patterns that heavily use these keys. 
+            Space separated.`;
+    } else {
+      prompt = `Generate a typing drill in Khmer focusing on these characters: ${keyString}. 
+             Create 10-15 words that use these characters. Space separated.`;
+    }
+
+    return await generateFromPrompt(prompt, lang, 'words');
+
+  } catch (e) {
+    return makePattern(keys);
+  }
+};
+
+export const generatePracticeText = async (lang: Language, difficulty: Difficulty = 'medium'): Promise<string> => {
+  // ... existing implementation
+  try {
+    // Check if offline requested or just to mix it up
+    // For Khmer, prefer our high-quality offline content for 'medium' and 'hard' sometimes
+    if (lang === 'km' && (difficulty === 'medium' || difficulty === 'hard') && Math.random() > 0.3) {
+      const content = getRandomKhmerContent(difficulty);
+      return content.text;
+    }
+
+    let prompt = "";
+    // ... remainder of function
     let type: ContentType = 'paragraph';
 
     if (lang === 'en') {

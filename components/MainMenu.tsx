@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { BiomeBackground } from './BiomeBackground';
 import { getBiomeForLevel } from '../utils/biomes';
+import { StreakFlame } from './StreakFlame';
 
 interface MainMenuProps {
     lang: Language;
@@ -17,6 +18,7 @@ interface MainMenuProps {
     t: Record<string, string>;
     onToggleLang: () => void;
     onStartPractice: () => void;
+    onStartDrill?: () => void;
     onStartChallenge: (challenge: Challenge) => void;
     onSelectLevel: (level: number) => void;
     onOpenSettings?: () => void;
@@ -56,6 +58,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     t,
     onToggleLang,
     onStartPractice,
+    onStartDrill,
     onStartChallenge,
     onSelectLevel,
     onOpenSettings,
@@ -80,10 +83,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                     </div>
 
                     <div className="flex items-center gap-4 md:gap-8">
-                        <div className="flex items-center gap-2" title={t.streak}>
-                            <Flame className={`w-5 h-5 ${userStreak > 0 ? 'text-orange-500 fill-orange-500' : 'text-slate-300'}`} />
-                            <span className="font-bold text-slate-600">{userStreak}</span>
-                        </div>
+                        <StreakFlame streak={userStreak} />
                         <div className="flex items-center gap-2" title={t.experience}>
                             <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                             <span className="font-bold text-slate-600">{userXP}</span>
@@ -147,6 +147,20 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                                 <div>
                                     <div className="font-bold text-slate-700">{t.practiceTitle}</div>
                                     <div className="text-xs text-slate-400">{t.randomDrills}</div>
+                                </div>
+                            </button>
+
+                            {/* Repair Mode (Drill) */}
+                            <button
+                                onClick={() => onStartDrill && onStartDrill()}
+                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group text-left"
+                            >
+                                <div className="bg-rose-100 text-rose-500 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                                    <Flame className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="font-bold text-slate-700">{lang === 'km' ? 'ជួសជុលចំណុចខ្សោយ' : 'Repair Mode'}</div>
+                                    <div className="text-xs text-slate-400">{lang === 'km' ? 'ហ្វឹកហាត់លើអក្សរដែលខុស' : 'Drill your problem keys'}</div>
                                 </div>
                             </button>
 

@@ -12,7 +12,8 @@ import { KEYBOARD_LAYOUT } from './utils/keyboardData';
 import { CHALLENGES } from './utils/challenges';
 import {
   saveScore, getUserLevel, saveUserLevel, saveLevelProgress,
-  getUserXP, addXP, getStreak, updateStreak
+  getUserXP, addXP, getStreak, updateStreak,
+  hasCompletedOnboarding, setOnboardingCompleted
 } from './services/storageService';
 import { getLevelData, LevelData } from './utils/levels';
 import { Language, GameStats, Finger, Challenge } from './types';
@@ -25,6 +26,14 @@ import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { SettingsPanel } from './components/SettingsPanel';
 import { ProfilePage } from './components/ProfilePage';
 import { LeaderboardPage } from './components/LeaderboardPage';
+import { TypingParticles } from './components/TypingParticles';
+import { KoompiBird } from './components/KoompiBird';
+import { BiomeBackground } from './components/BiomeBackground';
+import { MilestoneCelebration } from './components/MilestoneCelebration';
+import { ToastContainer, useToast } from './components/Toast';
+import { Onboarding } from './components/Onboarding';
+import { getBiomeForLevel } from './utils/biomes';
+import { audioService, useAudio } from './services/audioService';
 
 type AppMode = 'menu' | 'practice' | 'challenge-play' | 'adventure' | 'profile' | 'leaderboard';
 
@@ -198,6 +207,13 @@ const AppContent: React.FC = () => {
   const [maxCombo, setMaxCombo] = useState(0);
   const [xpGained, setXpGained] = useState(0);
 
+  // New: Reactive typing state
+  const [lastTypedTime, setLastTypedTime] = useState(Date.now());
+  const [particleTrigger, setParticleTrigger] = useState<{ x: number, y: number } | null>(null);
+  const [showShake, setShowShake] = useState(false);
+  const [showErrorFlash, setShowErrorFlash] = useState(false);
+  const audio = useAudio();
+
   // DOM Refs for Teleprompter
   const textContainerRef = useRef<HTMLDivElement>(null);
   const activeCharRef = useRef<HTMLSpanElement>(null);
@@ -215,6 +231,11 @@ const AppContent: React.FC = () => {
   const [isFinished, setIsFinished] = useState(false);
   const [challengeResult, setChallengeResult] = useState<{ success: boolean, message: string } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [milestoneLevel, setMilestoneLevel] = useState<number | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(!hasCompletedOnboarding());
+
+  // Toast notifications
+  const { toasts, addToast, dismissToast } = useToast();
 
   const t = UI_TEXT[lang];
 
@@ -224,6 +245,8 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     setUserXP(getUserXP());
     setUserStreak(getStreak());
+    // Initialize audio service
+    audio.initialize();
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
@@ -273,6 +296,30 @@ const AppContent: React.FC = () => {
     loadNewText('medium');
   };
 
+  const startDrill = async () => {
+    setMode('practice');
+    setActiveChallenge(null);
+    setIsLoading(true);
+    setChallengeResult(null);
+    setCombo(0);
+
+    // Lazy load storage to get keys
+    import('./services/storageService').then(async ({ getTopProblemKeys }) => {
+      const keys = getTopProblemKeys(5);
+      import('./services/geminiService').then(async ({ generateDrillText }) => {
+        const text = await generateDrillText(keys, lang);
+        setTargetText(text);
+        setUserInput("");
+        setStats({ wpm: 0, accuracy: 100, charsTyped: 0, errors: 0, startTime: null });
+        setIsLoading(false);
+        // Focus hidden input
+        setTimeout(() => {
+          if (hiddenInputRef.current) hiddenInputRef.current.focus();
+        }, 100);
+      });
+    });
+  };
+
   const startChallenge = (challenge: Challenge) => {
     setActiveChallenge(challenge);
     setMode('challenge-play');
@@ -313,6 +360,7 @@ const AppContent: React.FC = () => {
     setChallengeResult(null);
     setChallengeTimeLeft(null);
     setCurrentLevelData(null);
+    audio.stopMusic();
   };
 
 
@@ -393,10 +441,44 @@ const AppContent: React.FC = () => {
       const newUserInput = userInput + charTyped;
       setUserInput(newUserInput);
       setStats(prev => ({ ...prev, charsTyped: prev.charsTyped + 1 }));
+      setLastTypedTime(Date.now());
+
+      // Play typing sound
+      audio.playKeystroke(true);
+
+      // Trigger particles on fast typing (WPM > 30)
+      if (stats.wpm > 30 && activeCharRef.current) {
+        const rect = activeCharRef.current.getBoundingClientRect();
+        setParticleTrigger({ x: rect.left + rect.width / 2, y: rect.top });
+      }
 
       setCombo(c => {
         const next = c + 1;
         if (next > maxCombo) setMaxCombo(next);
+
+        // Music Intensity Logic
+        if (next === 1) audio.startMusic();
+        if (next === 10) {
+          audio.playJingle('combo');
+          audio.setMusicIntensity(1);
+          // Micro-shake at 10 combo
+          setShowShake(true);
+          setTimeout(() => setShowShake(false), 150);
+        }
+        if (next === 25) {
+          audio.playJingle('combo');
+          // Micro-shake at 25 combo
+          setShowShake(true);
+          setTimeout(() => setShowShake(false), 150);
+        }
+        if (next === 30) audio.setMusicIntensity(2);
+
+        // Trigger stronger shake at high combo
+        if (next === 50) {
+          audio.playJingle('streak');
+          setShowShake(true);
+          setTimeout(() => setShowShake(false), 300);
+        }
         return next;
       });
 
@@ -406,6 +488,10 @@ const AppContent: React.FC = () => {
     } else {
       setStats(prev => ({ ...prev, errors: prev.errors + 1 }));
       setCombo(0);
+      audio.playKeystroke(false);
+      // Visual error feedback
+      setShowErrorFlash(true);
+      setTimeout(() => setShowErrorFlash(false), 150);
       if (activeChallenge?.criteria.minAccuracy === 100) {
         setIsFinished(true);
         setChallengeResult({ success: false, message: t.challengeFailed });
@@ -580,36 +666,88 @@ const AppContent: React.FC = () => {
     const wpmBonus = stats.wpm >= 40 ? 50 : 0;
     const totalXP = baseXP + accBonus + wpmBonus;
     const newXP = addXP(totalXP);
+    const prevStreak = userStreak;
     const newStreak = updateStreak();
     setXpGained(totalXP);
     setUserXP(newXP);
     setUserStreak(newStreak);
 
+    // Show streak toast if streak was extended
+    if (newStreak > prevStreak) {
+      const streakMessage = lang === 'km'
+        ? `ថ្ងៃទី ${newStreak} នៃការបន្ត! បន្តទៀត!`
+        : `Day ${newStreak} Streak! Keep it up!`;
+      addToast(streakMessage, 'streak', 5000);
+    }
+
     if (mode === 'adventure' && currentLevelData) {
-      let success = true;
-      let reasons: string[] = [];
-      if (stats.accuracy < currentLevelData.criteria.minAccuracy) {
-        success = false;
-        reasons.push(`${t.needs} ${currentLevelData.criteria.minAccuracy}% ${t.accuracy}`);
-      }
-      if (stats.wpm < currentLevelData.criteria.minWpm) {
-        success = false;
-        reasons.push(`${t.needs} ${currentLevelData.criteria.minWpm} ${t.wpm}`);
-      }
-      if (success) {
+      const { minAccuracy, minWpm } = currentLevelData.criteria;
+
+      // Check if requirements are met
+      const accMet = stats.accuracy >= minAccuracy;
+      const wpmMet = stats.wpm >= minWpm;
+
+      // Grace margin: Allow passing if VERY close (within 5% accuracy or 2 WPM)
+      // This prevents frustration from barely missing the mark
+      const accClose = stats.accuracy >= minAccuracy - 5;
+      const wpmClose = stats.wpm >= minWpm - 2;
+
+      // Success conditions:
+      // 1. Both requirements met = Full success
+      // 2. Both requirements close = Grace pass (1 star, encouraging message)
+      // 3. One met, one close = Grace pass
+      const fullSuccess = accMet && wpmMet;
+      const gracePass = (accClose && wpmClose) && !fullSuccess;
+
+      if (fullSuccess || gracePass) {
         // Calculate Stars
         let stars = 1; // Base star for passing
-        // Bonus for high accuracy
-        if (stats.accuracy >= 98) stars++;
-        // Bonus for speed (beat min by 20% or flat 40wpm)
-        if (stats.wpm >= Math.max(40, currentLevelData.criteria.minWpm * 1.2)) stars++;
+
+        if (fullSuccess) {
+          // Bonus stars only for full success
+          if (stats.accuracy >= minAccuracy + 10) stars++; // Exceeded accuracy by 10%+
+          if (stats.wpm >= minWpm + 5) stars++; // Exceeded WPM by 5+
+        }
+        // Grace pass always gets 1 star (no bonus)
 
         // Cap at 3
         if (stars > 3) stars = 3;
 
         saveLevelProgress(lang, currentLevelData.level, stars, totalXP);
-        setChallengeResult({ success: true, message: t.levelComplete });
+
+        if (gracePass) {
+          // Encouraging message for close attempts
+          const closeMsg = lang === 'km' ? 'ជិតបានហើយ! សូមបន្ត!' : 'Close enough! Keep going!';
+          setChallengeResult({ success: true, message: closeMsg });
+        } else {
+          setChallengeResult({ success: true, message: t.levelComplete });
+        }
+        audio.playJingle('level');
+
+        // Check for milestone levels (10, 50, 100, 150)
+        const completedLevel = currentLevelData.level + 1; // level is 0-indexed
+        const milestones = [10, 50, 100, 150];
+        if (milestones.includes(completedLevel)) {
+          // Delay milestone celebration to show after results modal
+          setTimeout(() => setMilestoneLevel(completedLevel), 1500);
+        }
       } else {
+        // Build helpful failure message
+        const reasons: string[] = [];
+        if (!accClose) {
+          const diff = minAccuracy - stats.accuracy;
+          const msg = lang === 'km'
+            ? `ត្រូវការ ${diff.toFixed(0)}% ទៀតសម្រាប់ភាពត្រឹមត្រូវ`
+            : `Need ${diff.toFixed(0)}% more accuracy`;
+          reasons.push(msg);
+        }
+        if (!wpmClose) {
+          const diff = minWpm - stats.wpm;
+          const msg = lang === 'km'
+            ? `ត្រូវការ ${diff.toFixed(0)} WPM ទៀត`
+            : `Need ${diff.toFixed(0)} more WPM`;
+          reasons.push(msg);
+        }
         setChallengeResult({ success: false, message: reasons.join('. ') });
       }
       return;
@@ -654,6 +792,17 @@ const AppContent: React.FC = () => {
   const activeFinger = getActiveFinger();
   const progressPercent = Math.min(100, Math.max(0, (userInput.length / (normalizedTarget.length || 1)) * 100));
 
+  // Handle onboarding completion
+  const handleOnboardingComplete = () => {
+    setOnboardingCompleted();
+    setShowOnboarding(false);
+  };
+
+  // VIEW: ONBOARDING (first-time users)
+  if (showOnboarding) {
+    return <Onboarding lang={lang} onComplete={handleOnboardingComplete} />;
+  }
+
   // VIEW: MAIN MENU
   if (mode === 'menu') {
     return (
@@ -666,6 +815,7 @@ const AppContent: React.FC = () => {
           t={t}
           onToggleLang={() => setLang(prev => prev === 'en' ? 'km' : 'en')}
           onStartPractice={startPractice}
+          onStartDrill={startDrill}
           onStartChallenge={startChallenge}
           onSelectLevel={startLevel}
           onOpenSettings={() => setSettingsOpen(true)}
@@ -693,11 +843,42 @@ const AppContent: React.FC = () => {
     );
   }
 
+  // Get current biome based on level
+  const currentBiome = currentLevelData ? getBiomeForLevel(currentLevelData.level) : 'sky';
+
   // View: Game
   return (
     <>
-      <div className={`min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-blue-200 text-slate-800 flex flex-col font-sans overflow-hidden ${lang === 'km' ? 'font-khmer' : ''} relative`}>
-        <BackgroundDecor />
+      <div className={`min-h-screen text-slate-800 flex flex-col font-sans overflow-hidden ${lang === 'km' ? 'font-khmer' : ''} relative ${showShake ? 'animate-shake' : ''}`}>
+        {/* Dynamic Biome Background */}
+        <BiomeBackground biome={currentBiome} />
+
+        {/* Error Flash Overlay */}
+        {showErrorFlash && (
+          <div className="fixed inset-0 bg-red-500/15 pointer-events-none z-[60] animate-error-flash" />
+        )}
+
+        {/* Particle Effects */}
+        <TypingParticles
+          active={!isFinished && !isLoading && stats.wpm > 30}
+          intensity={stats.wpm > 60 ? 'high' : stats.wpm > 40 ? 'medium' : 'low'}
+          theme={currentBiome}
+          triggerX={particleTrigger?.x}
+          triggerY={particleTrigger?.y}
+          combo={combo}
+        />
+
+        {/* Koompi Bird Mascot */}
+        <div className="fixed bottom-4 left-4 z-40 hidden sm:block">
+          <KoompiBird
+            wpm={stats.wpm}
+            isTyping={!isFinished && userInput.length > 0}
+            isFinished={isFinished && challengeResult?.success === true}
+            lastTypedTime={lastTypedTime}
+            combo={combo}
+            hasError={showErrorFlash}
+          />
+        </div>
 
         {/* Hidden Input for IME Support - Critical for Khmer on Linux */}
         <input
@@ -741,6 +922,18 @@ const AppContent: React.FC = () => {
             }}
           />
         )}
+
+        {/* Milestone Celebration Modal */}
+        {milestoneLevel && (
+          <MilestoneCelebration
+            level={milestoneLevel}
+            lang={lang}
+            onClose={() => setMilestoneLevel(null)}
+          />
+        )}
+
+        {/* Toast Notifications */}
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
         <header className="flex justify-between items-center p-2 sm:p-4 sticky top-0 z-50">
           <div className="flex items-center gap-2 sm:gap-4">
@@ -871,6 +1064,14 @@ const AppContent: React.FC = () => {
             {/* Center Marker */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-8 sm:h-10 bg-blue-500/20 rounded-full z-0 pointer-events-none"></div>
 
+            {/* Progress Bar */}
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-200/50">
+              <div
+                className="h-full bg-gradient-to-r from-blue-400 via-emerald-400 to-emerald-500 transition-all duration-300 ease-out rounded-r-full"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+
             <div
               ref={textContainerRef}
               className="flex items-center overflow-x-auto h-full px-[50%] no-scrollbar"
@@ -885,7 +1086,7 @@ const AppContent: React.FC = () => {
                   if (isTyped) {
                     base += "text-slate-400 opacity-50 scale-90 blur-[0.5px]";
                   } else if (isCurrent) {
-                    base += "bg-white text-blue-600 shadow-lg scale-105 sm:scale-110 font-bold border border-blue-100 z-10 animate-bounce";
+                    base += "bg-white text-blue-600 shadow-lg scale-105 sm:scale-110 font-bold border border-blue-100 z-10 animate-pulse-subtle";
                   } else {
                     base += "text-slate-700 opacity-80";
                   }

@@ -83,20 +83,48 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, l
                         />
                     </div>
 
-                    {/* Sound Effects */}
-                    <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border-2 border-slate-100 shadow-sm hover:border-emerald-200 transition-colors">
-                        <div className="p-2.5 bg-emerald-100 rounded-xl text-emerald-500">
-                            <Music className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
+                    {/* Sound Control Group */}
+                    <div className="bg-white rounded-2xl border-2 border-slate-100 shadow-sm p-4 space-y-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-emerald-100 rounded-xl text-emerald-500">
+                                <Music className="w-5 h-5" />
+                            </div>
                             <div className="font-bold text-slate-700 font-khmer">{t.soundEffects}</div>
-                            <p className="text-xs text-slate-400 mt-0.5 font-khmer truncate">{t.soundEffectsDesc}</p>
                         </div>
-                        <Toggle
-                            checked={settings.soundEffects}
-                            onChange={(v) => updateSetting('soundEffects', v)}
-                            color="bg-emerald-500"
-                        />
+
+                        {/* Master Toggle */}
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-slate-500 font-khmer">Enable Audio</span>
+                            <Toggle
+                                checked={settings.soundEffects}
+                                onChange={(v) => {
+                                    updateSetting('soundEffects', v);
+                                    // Update audio service directly if imported, or rely on App to sync
+                                    // For immediate feedback we rely on App syncing, but let's be safe
+                                    import('../services/audioService').then(({ audioService }) => audioService.setEnabled(v));
+                                }}
+                                color="bg-emerald-500"
+                            />
+                        </div>
+
+                        {/* Sound Profile */}
+                        {settings.soundEffects && (
+                            <div className="flex gap-2 p-1 bg-slate-100 rounded-xl">
+                                {(['clicky', 'thocky', 'silent'] as const).map(profile => (
+                                    <button
+                                        key={profile}
+                                        onClick={() => import('../services/audioService').then(({ audioService }) => audioService.setSoundProfile(profile))}
+                                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg capitalize transition-colors ${
+                                            // Ideally we read this from audioService or store in settings, 
+                                            // for now just simple buttons that work
+                                            'bg-white text-slate-700 shadow-sm hover:bg-emerald-50'
+                                            }`}
+                                    >
+                                        {profile}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Finger Guide */}
