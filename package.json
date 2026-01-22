@@ -4,6 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "main": "dist-electron/main.js",
+  "author": {
+    "name": "KOOMPI",
+    "email": "support@koompi.com"
+  },
+  "description": "KOOMPI Typing Tutor - Learn to type in English and Khmer",
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc -p electron/tsconfig.json && electron-builder",
@@ -14,7 +19,7 @@
   },
   "build": {
     "appId": "com.koompi.typing",
-    "productName": "KOOMPI Typing",
+    "productName": "koompi-typing",
     "directories": {
       "output": "dist-electron-build"
     },
@@ -22,10 +27,39 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "public/icon.png",
+        "to": "icon.png"
+      }
+    ],
     "linux": {
-      "target": "AppImage",
+      "target": ["pacman"],
       "category": "Education",
-      "icon": "public/icon.png"
+      "icon": "public/icon.png",
+      "desktop": {
+        "entry": {
+          "Name": "KOOMPI Typing",
+          "Icon": "/opt/koompi-typing/resources/icon.png"
+        }
+      }
+    },
+    "pacman": {
+      "depends": [
+        "c-ares",
+        "ffmpeg",
+        "gtk3",
+        "libevent",
+        "libvpx",
+        "libxslt",
+        "libxss",
+        "minizip",
+        "nss",
+        "re2",
+        "snappy",
+        "libnotify",
+        "libappindicator-gtk3"
+      ]
     },
     "win": {
       "target": "nsis",
