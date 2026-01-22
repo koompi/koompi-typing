@@ -102,16 +102,20 @@ export const getChallengeScores = (challengeId: string): LeaderboardEntry[] => {
 export const getLevelProgress = (lang: Language, level: number): { stars: number; unlocked: boolean; score: number } => {
   try {
     const raw = getItem(`${LEVEL_KEY_PREFIX}${lang}_${level}`);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const data = JSON.parse(raw);
+      // Force unlock for all existing levels so users can jump anywhere
+      return { ...data, unlocked: true };
+    }
 
-    // Default: Only Level 0 is unlocked by default
+    // Default: All levels unlocked by default now
     return {
       stars: 0,
-      unlocked: level === 0,
+      unlocked: true,
       score: 0
     };
   } catch {
-    return { stars: 0, unlocked: level === 1, score: 0 };
+    return { stars: 0, unlocked: true, score: 0 };
   }
 };
 
@@ -142,13 +146,19 @@ export const saveLevelProgress = (lang: Language, level: number, stars: number, 
 };
 
 // Deprecated but kept for backward compatibility if needed
+// Update to find next INCOMPLETE level (since all are unlocked)
 export const getUserLevel = (lang: Language): number => {
-  // Find highest unlocked level
-  let lvl = 1;
-  while (getLevelProgress(lang, lvl).unlocked) {
+  let lvl = 0;
+  // Iterate until we find a level with 0 stars (not completed)
+  // Max cap 200 to prevent infinite loops
+  while (lvl < 200) {
+    const progress = getLevelProgress(lang, lvl);
+    if (progress.stars === 0) {
+      return lvl;
+    }
     lvl++;
   }
-  return lvl - 1;
+  return lvl;
 };
 
 export const saveUserLevel = (lang: Language, level: number) => {
